@@ -83,28 +83,29 @@ docker compose down -v
 
 ---
 
-## Connecting from JavaScript
+## The .env file
 
+The `.env` file in the root of the project stores credentials (database usernames, passwords, etc.). Instead of hardcoding these values directly in your code, you read them via `process.env.VARIABLE_NAME`. The `dotenv` library loads the `.env` file automatically when your code runs.
+
+At the top of your `client.js`, add:
 ```js
-// PostgreSQL
-import pg from 'pg';
-const client = new pg.Client({
-  host: 'localhost', port: 5432,
-  user: 'admin', password: 'admin', database: 'auction_house'
-});
-
-// MongoDB
-import mongoose from 'mongoose';
-await mongoose.connect('mongodb://admin:admin@localhost:27017/auction_house?authSource=admin');
-
-// Redis
-import Redis from 'ioredis';
-const redis = new Redis({ host: 'localhost', port: 6379 });
-
-// Kafka
-import { Kafka } from 'kafkajs';
-const kafka = new Kafka({ clientId: 'auction-app', brokers: ['localhost:9092'] });
+import dotenv from 'dotenv'
+dotenv.config()
 ```
+
+Then you can use any variable from `.env` like:
+```js
+process.env.POSTGRES_USER      // 'admin'
+process.env.POSTGRES_PASSWORD  // 'admin'
+```
+
+This means all credentials are defined in one place — if something changes, you update `.env` and nothing else.
+
+---
+
+## Documentation
+
+See [docs.md](docs.md) for links to each database client library's documentation.
 
 ---
 
