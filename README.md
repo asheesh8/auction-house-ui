@@ -62,13 +62,16 @@ Each team member needs these installed:
 
 ---
 
-## Daily workflow
+## Docker commands
 
 ```bash
 # Start databases (do this before running your code)
 docker compose up -d
 
-# Stop databases (end of day — data is saved)
+# Check services are running
+docker compose ps
+
+# Stop databases (just pausing them basically)
 docker compose stop
 
 # Full stop + remove containers (data still saved in volumes)
