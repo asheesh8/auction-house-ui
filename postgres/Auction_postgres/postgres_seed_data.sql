@@ -8,19 +8,27 @@ VALUES
     ('lloyd.ivester@mymail.champlain.edu', 'ScootchCity', 'Password789'),
     ('logan.donaghue@mymail.champlain.edu', 'Loganest2110', 'Password0!?');
 
--- items data
-INSERT INTO items (item_name, description, seller, sold_to)
+--Auctions in progress (Will later add a few past auctions with manually-entered dates)
+INSERT INTO auctions (seller, item_name, description, status)
 VALUES
-    ('2012 Chevy Silverado', 'Good condition, mostly original parts', (SELECT id FROM accounts WHERE email = 'calvin.dibartolo@mymail.champlain.edu'), (SELECT id FROM accounts WHERE email = 'logan.donaghue@mymail.champlain.edu')),
-    ('House of the Dead Original Arcade Machine', NULL, (SELECT id FROM accounts WHERE email = 'ashish.subedi@mymail.champlain.edu'), NULL),
-    ('Orange Game Cube', NULL, (SELECT id FROM accounts WHERE email = 'lloyd.ivester@mymail.champlain.edu'), NULL);
+    ((SELECT id FROM accounts WHERE email = 'calvin.dibartolo@mymail.champlain.edu'), '2015 Honda Civic', 'Good condition, mostly spare parts', 'In-Progress'),
+    ((SELECT id FROM accounts WHERE email = 'ashish.subedi@mymail.champlain.edu'), 'House of the Dead Original Arcade Machine', 'Heavily used, one light-gun broken', 'In-Progress'),
+    ((SELECT id FROM accounts WHERE email = 'lloyd.ivester@mymail.champlain.edu'), 'Orange Game Cube', NULL, 'In-Progress');
 
-INSERT INTO auctions (item_id, status)
-VALUES
-    ((SELECT id FROM items WHERE item_name = '2012 Chevy Silverado'), 'Finished'),
-    ((SELECT id FROM items WHERE item_name = 'House of the Dead Original Arcade Machine'), 'In-Progress'),
-    ((SELECT id FROM items WHERE item_name = 'Orange Game Cube'), 'In-Progress');
+-- INSERT INTO bids (auction_id, account_id, amount, top_bid)
+-- VALUES
+--     ((SELECT FROM auctions WHERE item_name = '2015 Honda Civic'), (SELECT FROM accounts WHERE email = 'logan.donaghue@mymail.champlain.edu'), 9700.00, )
 
-INSERT INTO bids (auction_id, account_id, amount, top_bid)
-VALUES
-    ((SELECT id FROM auctions WHERE item_id.item_name = '2012 Chevy Silverado'), (SELECT FROM accounts WHERE email = 'ashish.subedi@mymail.champlain.edu'), 8900.00, TRUE),
+-- DEPRECATED DATA, BEING KEPT FOR REFERENCE
+-- INSERT INTO items (item_name, description, seller, sold_to)
+-- VALUES
+--     ('2012 Chevy Silverado', 'Good condition, mostly original parts', (SELECT id FROM accounts WHERE email = 'calvin.dibartolo@mymail.champlain.edu'), (SELECT id FROM accounts WHERE email = 'logan.donaghue@mymail.champlain.edu')),
+--     ('House of the Dead Original Arcade Machine', NULL, (SELECT id FROM accounts WHERE email = 'ashish.subedi@mymail.champlain.edu'), NULL),
+--     ('Orange Game Cube', NULL, (SELECT id FROM accounts WHERE email = 'lloyd.ivester@mymail.champlain.edu'), NULL);
+--
+-- INSERT INTO auctions (item_id, status)
+-- VALUES
+--     ((SELECT id FROM items WHERE item_name = '2012 Chevy Silverado'), 'Finished'),
+--     ((SELECT id FROM items WHERE item_name = 'House of the Dead Original Arcade Machine'), 'In-Progress'),
+--     ((SELECT id FROM items WHERE item_name = 'Orange Game Cube'), 'In-Progress');
+

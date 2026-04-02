@@ -12,9 +12,6 @@ CREATE TABLE IF NOT EXISTS accounts (
     --TODO: give some sort of constraint to password for added security?
 );
 
--- Items: contains all the items up for auction
---TODO: Double check type correctness on ids
-
 -- Auctions: contains all auctions, finished or in progress
 --TODO: add something to make auctions distinguishable without its item
 CREATE TABLE IF NOT EXISTS auctions (
@@ -22,10 +19,9 @@ CREATE TABLE IF NOT EXISTS auctions (
     seller UUID NOT NULL REFERENCES accounts(id),
     item_name VARCHAR(100) NOT NULL,
     description VARCHAR(1000),
-    start_date TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP + INTERVAL '1 day',
+    start_date TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     end_date TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP + interval '4 days',
-    status VARCHAR(20)
-    --TODO: Add constraint for status types
+    status VARCHAR(20) CHECK (status IN ('In-Progress', 'Finished'))
     --NOTE: due to circular references, top_bid is being moved to bids
 );
 
@@ -35,7 +31,8 @@ CREATE TABLE IF NOT EXISTS bids (
     auction_id INT NOT NULL REFERENCES auctions(id),
     account_id UUID REFERENCES accounts(id),
     amount FLOAT,
-    top_bid BOOLEAN
+    top_bid BOOLEAN,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     --TODO: adjust type to reflect actual money values
 );
 
