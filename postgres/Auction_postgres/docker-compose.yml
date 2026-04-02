@@ -1,0 +1,35 @@
+services:
+
+  # PostgreSQL
+  postgres:
+    image: postgres:16
+    container_name: auction_postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: auction_postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d auction_postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Adminer for database management
+  adminer:
+    image: adminer:latest
+    container_name: auction_adminer
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: auction_postgres
+      ADMINER_DESIGN: pepa-linha-dark
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
