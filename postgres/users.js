@@ -18,8 +18,12 @@ async function verify_login(identifier, password) {
 }
 
 // Similar to verify_login above, will check db to see if this email has been used alreadu or not.
-function verify_unique_email() {
-
+async function verify_unique_email(email) {
+  const result = await client.query (
+    'SELECT id, username FROM accounts WHERE email = $1',
+      [email]
+  )
+  return result.rowCount > 0
 }
 
 // Once everything has been verified, this function will write all of the account info to the db.
