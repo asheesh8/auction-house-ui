@@ -2,7 +2,7 @@ services:
 
   # ──────────────────────────────────────────
   # PostgreSQL
-  # UI: pgAdmin at http://localhost:5050
+  # UI: pgAdmin at http://localhost:5050, Adminer at http://localhost:8084
   # ──────────────────────────────────────────
   postgres:
     image: postgres:16
@@ -26,6 +26,15 @@ services:
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
     ports:
       - "5050:80"
+    depends_on:
+      - postgres
+
+  adminer:
+    image: adminer:latest
+    container_name: auction_adminer
+    restart: unless-stopped
+    ports:
+      - "8084:8080"
     depends_on:
       - postgres
 

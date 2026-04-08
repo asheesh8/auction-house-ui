@@ -48,6 +48,7 @@ Each team member needs these installed:
 | Dashboard | URL | Login |
 |-----------|-----|-------|
 | pgAdmin (Postgres) | http://localhost:5050 | `admin@admin.com` / `admin` |
+| Adminer (Postgres) | http://localhost:8084 | System: `PostgreSQL`, Server: `postgres`, Username/Password/Database: from `.env` |
 | Mongo Express | http://localhost:8082 | none |
 | Redis Commander | http://localhost:8081 | none |
 | Kafka UI | http://localhost:8083 | none |
