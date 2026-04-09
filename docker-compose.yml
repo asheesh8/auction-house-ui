@@ -125,7 +125,7 @@ services:
     restart: unless-stopped
     environment:
       KAFKA_CLUSTERS_0_NAME: auction-house
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: localhost:9092
     ports:
       - "8083:8080"
     depends_on:
