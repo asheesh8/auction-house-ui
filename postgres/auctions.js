@@ -14,8 +14,15 @@ async function get_active_auctions() {
 }
 
 // get more detailed info a specific auction
-function get_auction_details(auction_item) {
-
+async function get_auction_details(auction_item) {
+    const result = await client.query(
+        "SELECT item_name, end_date, description FROM auctions WHERE item_name = $1",
+        [auction_item],
+        function (err, data, fields) {
+            if (err) throw err;
+            console.log(data.rows); //succesfully prints out rows. TODO: set up actual return
+        }
+    )
 }
 
 // will write a new auction to the postgres database
@@ -31,4 +38,4 @@ async function write_auction(seller, item, desc) {
 
 //TODO: functions for updating auction state and other administrative tasks
 
-get_active_auctions();
+get_auction_details("House of the Dead Original Arcade Machine");
