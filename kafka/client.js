@@ -1,16 +1,7 @@
 // Docs: https://kafka.js.org/docs/getting-started
 
 //import 'dotenv/config'
-//import kafka from 'kafkajs'
-
-
-//require import from kafka docs. not used.
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-
-const { Kafka } = require('kafkajs')
-
-//const { Kafka } = kafka
+import { Kafka } from 'kafkajs'
 
 const kafka = new Kafka({
   clientId: 'auction-house',
