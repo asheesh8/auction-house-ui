@@ -1,0 +1,25 @@
+const mongoose = require('mongoose');
+
+// Auction table. Could use references for ids however it might be easier not to for working with other databases.
+const auctions = new mongoose.Schema({
+    seller_id: {type: Number, required: true},
+    item: {type: String, required: true},
+    description: String,
+    start_date: {type: Date, default: Date.now},
+    end_date: {type: Date, required: true},
+    active: {type: Boolean, required: true}
+});
+
+// Bids table. Same as above table for references.
+const bids = new mongoose.Schema({
+    auction_id: {type: Number, required: true},
+    account_id: {type: Number, required: true},
+    amount: {type: Number, required: true},
+    top_bid: {type: Boolean, required: true},
+    created_at: {type: Date, default: Date.now}
+});
+
+const auctionsExport = mongoose.model('Auctions', auctions);
+const bidsExport = mongoose.model('Bids', bids);
+
+module.exports = {auctionsExport, bidsExport};
