@@ -1,4 +1,7 @@
-const mongoose = require('mongoose');
+import database from "./client.js";
+import mongoose from 'mongoose';
+
+await database();
 
 // Auction table. Could use references for ids however it might be easier not to for working with other databases.
 const auctions = new mongoose.Schema({
@@ -19,7 +22,5 @@ const bids = new mongoose.Schema({
     created_at: {type: Date, default: Date.now}
 });
 
-const auctionsExport = mongoose.model('Auctions', auctions);
-const bidsExport = mongoose.model('Bids', bids);
-
-module.exports = {auctionsExport, bidsExport};
+export const auctionsExport = mongoose.model('Auctions', auctions);
+export const bidsExport = mongoose.model('Bids', bids);
