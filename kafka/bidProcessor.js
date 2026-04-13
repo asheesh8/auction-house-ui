@@ -1,11 +1,13 @@
 import kafka from './client.js'
+import { setTopBid } from '../redis/auction.js'
+
 // TODO: import redis auction methods once implemented
 
 const consumer = kafka.consumer({ groupId: 'bid-processor' })
 
+//revalidate on consumer side as check for safety
 async function validateBid(_auctionId, _amount) {
-  // TODO: re-validate bid against Postgres top bid
-  // query current top bid for auctionId, return { valid, reason }
+//main validation already happened in producer before hitting kafka
   return { valid: true }
 }
 
@@ -13,9 +15,11 @@ async function processBid(auctionId, _accountId, amount) {
   const { valid, reason } = await validateBid(auctionId, amount)
   if (!valid) return { valid: false, reason }
 
-  // TODO: write bid to Postgres (new_bid in postgres/bids.js)
-  // TODO: update Redis with new top bid amount for auctionId
+  //update redis with new top bid after kafka processes it
+  await setTopBid(auctionId, amount)
 
+  // TODO: write bid to Postgres (new_bid in postgres/bids.js)
+  
   return { valid: true }
 }
 

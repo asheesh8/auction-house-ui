@@ -37,5 +37,3 @@ async function write_auction(seller, item, desc) {
 }
 
 //TODO: functions for updating auction state and other administrative tasks
-
-get_auction_details("House of the Dead Original Arcade Machine");
