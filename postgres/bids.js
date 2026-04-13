@@ -22,4 +22,4 @@ function new_bid() {
 
 }
 
-get_top_bid("House of the Dead Original Arcade Machine");
+//get_top_bid("House of the Dead Original Arcade Machine");
