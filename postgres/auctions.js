@@ -1,28 +1,18 @@
 import client from "./client.js";
 // will return all auctions in progress
 // not all info, just perfunctory info for quick display
-//is the async actually necessary here? all it seems to do is make impossible to do anything after the await
 //TODO: not finished, commented out for now so it doesn't mess with other functions
 async function get_active_auctions() {
-    const result = await client.query(
-        "SELECT item_name, end_date FROM auctions WHERE status = 'In-Progress'",
-        function (err, data, fields) {
-            if (err) throw err;
-            console.log(data.rows); //successfully prints out rows. TODO: set up actual return array
-        }
-    );
+    const result = await client.query("SELECT item_name, end_date FROM auctions WHERE status = 'In-Progress'");
+    //console.log(result);
+    return result.rows;
 }
 
 // get more detailed info a specific auction
 async function get_auction_details(auction_item) {
-    const result = await client.query(
-        "SELECT item_name, end_date, description FROM auctions WHERE item_name = $1",
-        [auction_item],
-        function (err, data, fields) {
-            if (err) throw err;
-            console.log(data.rows); //succesfully prints out rows. TODO: set up actual return
-        }
-    )
+    const result = await client.query("SELECT item_name, end_date, description FROM auctions WHERE item_name = $1", [auction_item]);
+    //console.log(result);
+    return result.rows;
 }
 
 // will write a new auction to the postgres database
@@ -32,8 +22,11 @@ async function write_auction(seller, item, desc) {
     const result = client.query(
         "INSERT INTO auctions (seller, item_name, description) VALUES ($1, $2, $3)",
         [seller, item, desc]
-    )
+    );
     return result.rowCount > 0
 }
 
+//Note: these functions have to be awaited to work, like below
+// const auctions = await get_active_auctions();
+// console.log(auctions);
 //TODO: functions for updating auction state and other administrative tasks
