@@ -33,7 +33,7 @@ await client.query(`
     auction_id INT NOT NULL REFERENCES auctions(id),
     account_id UUID REFERENCES accounts(id),
     amount FLOAT,
-    top_bid BOOLEAN,
+    top_bid BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
   )
 `)
