@@ -15,10 +15,10 @@ async function set_top_bid(bid_id) {
 
 // place a new bid on an auction.
 // if it is higher than the current highest bid, set as the new highest bid
-function new_bid(auction_item, amount) {
-    // const result = client.query(
-    //
-    // )
+function write_bid(auction_item, account_id, amount) {
+    const result = client.query(
+        "INSERT INTO bids (auction_id, account_id, amount) VALUES ((SELECT id FROM auctions WHERE item_name = $1 LIMIT 1), (SELECT id FROM accounts WHERE email = $2 LIMIT 1), $3;"
+    );
 }
 
 //get_top_bid("House of the Dead Original Arcade Machine");
