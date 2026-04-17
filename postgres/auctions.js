@@ -19,7 +19,7 @@ async function get_auction_details(auction_item) {
 // like other write functions, return is just a confirmation if the row was successfully written in db
 //TODO: figure out how to get account UUID or another identifying feature without compromising data security
 async function write_auction(seller, item, desc) {
-    const result = client.query(
+    const result = await client.query(
         "INSERT INTO auctions (seller, item_name, description) VALUES ($1, $2, $3)",
         [seller, item, desc]
     );
@@ -30,3 +30,5 @@ async function write_auction(seller, item, desc) {
 // const auctions = await get_active_auctions();
 // console.log(auctions);
 //TODO: functions for updating auction state and other administrative tasks
+
+export { get_active_auctions, get_auction_details, write_auction }

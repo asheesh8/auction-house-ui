@@ -37,3 +37,7 @@ export async function submitBid(auctionId, accountId, amount) {
 
   return { valid: true }
 }
+
+
+// TODO: need to figure out sessions/ cookies or something to hold user id
+// once user is logged in

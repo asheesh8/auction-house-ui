@@ -14,15 +14,21 @@ async function set_top_bid(bid_id) {
     return result.rowCount > 0;
 }
 
-// write a new bid to the bids table
-async function write_bid(auction_item, account_id, amount) {
+// place a new bid on an auction.
+// auction_id is the postgres integer ID, account_id is the account UUID
+async function write_bid(auction_id, account_id, amount) {
     const result = await client.query(
-        "INSERT INTO bids (auction_id, account_id, amount) VALUES ((SELECT id FROM auctions WHERE item_name = $1 LIMIT 1), (SELECT id FROM accounts WHERE email = $2 LIMIT 1), $3;"
+        "INSERT INTO bids (auction_id, account_id, amount) VALUES ($1, $2, $3)",
+        [auction_id, account_id, amount]
     );
-    return result;
+    return result.rowCount > 0;
 }
 
 // todo: add write_baseline_bid
 
+
+//be careful leaving these tests. they are called every time we import!
 //get_top_bid("House of the Dead Original Arcade Machine");
 //set_top_bid(4);
+
+export { get_top_bid, set_top_bid, write_bid }
