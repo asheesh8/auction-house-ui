@@ -1,4 +1,6 @@
 import client from "./client.js";
+import { write_starting_bid } from "./bids.js";
+
 // will return all auctions in progress
 // not all info, just perfunctory info for quick display
 //TODO: not finished, commented out for now so it doesn't mess with other functions
@@ -20,9 +22,11 @@ async function get_auction_details(auction_item) {
 //TODO: figure out how to get account UUID or another identifying feature without compromising data security
 async function write_auction(seller, item, desc) {
     const result = await client.query(
-        "INSERT INTO auctions (seller, item_name, description) VALUES ($1, $2, $3)",
+        "INSERT INTO auctions (seller, item_name, description) VALUES ($1, $2, $3) RETURNING id",
         [seller, item, desc]
     );
+    const id = result.rows[0].id;
+    const bid_result = write_starting_bid(id, seller);
     return result.rowCount > 0
 }
 

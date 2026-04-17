@@ -13,6 +13,7 @@ await client.query(`
 //create auction table = stores all auctions, active + finished
 //seller references the account of UUID or whoever created auction
 // end_date = 4 days default after creation (96 hours)
+// IMPORTANT: EVERY AUCTION MUST HAVE A 'STARTER' BID FOR THE TOP BID SYSTEM TO WORK CORRECTLY
 await client.query(`
   CREATE TABLE IF NOT EXISTS auctions (
     id BIGSERIAL PRIMARY KEY,
