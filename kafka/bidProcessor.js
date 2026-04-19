@@ -1,6 +1,6 @@
 import kafka from './client.js'
 import { getAuction, getTopBid, setTopBid } from '../redis/auction.js'
-import { write_bid } from '../postgres/bids.js'
+import { write_bid, set_top_bid } from '../postgres/bids.js'
 
 const consumer = kafka.consumer({ groupId: 'bid-processor' })
 const admin = kafka.admin()
@@ -27,7 +27,8 @@ async function processBid(auctionId, accountId, amount) {
     return
   }
 
-  await write_bid(auctionId, accountId, amount)
+  const bidId = await write_bid(auctionId, accountId, amount)
+  await set_top_bid(bidId, auctionId)
   await setTopBid(auctionId, amount)
 }
 

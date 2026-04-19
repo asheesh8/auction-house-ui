@@ -16,9 +16,10 @@ Items that need to be implemented or fixed by the DB owners before the web GUI i
 - [ ] `get_active_auctions()` is commented out and never called — either finish or remove it.
 
 **`postgres/bids.js`**
-- [ ] `get_top_bid(auction_item)` returns `result.amount` instead of `result.rows[0].amount` — will always return `undefined`.
-- [ ] `set_top_bid(bid_id, auction_id)` returns the result of the first query (demarks old top bid) instead of the second (marks new top bid) — wrong return value.
-- [ ] Neither function is currently called anywhere; the Redis versions are used instead. Confirm whether these are still needed.
+- [x] `get_top_bid()` — fixed return value to `result.rows[0]?.amount`
+- [x] `set_top_bid()` — fixed return value, now references correct result variable
+- [x] `write_bid()` — now returns new bid `id` via `RETURNING id` so `set_top_bid` can be called with it
+- [x] Both functions now called from `kafka/bidProcessor.js` — Postgres `top_bid` flag kept in sync
 
 ---
 
