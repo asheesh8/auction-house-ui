@@ -12,8 +12,9 @@ async function get_top_bid(auction_item) {
 async function set_top_bid(bid_id, auction_id) {
     // de-designating the old top_bid
     const result1 = await client.query ("UPDATE bids SET top_bid = FALSE WHERE auction_id = $1 AND top_bid = TRUE", [auction_id]);
+    // designating the new top_bid
     const result2 = await client.query("UPDATE bids SET top_bid = TRUE WHERE id = $1;", [bid_id]);
-    return result.rowCount > 0;
+    return result1.rowCount > 0;
 }
 
 // place a new bid on an auction.
