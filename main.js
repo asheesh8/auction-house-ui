@@ -5,7 +5,6 @@ import redis from './redis/index.js'
 import kafka from './kafka/index.js'
 import { run as runBidProcessor } from './kafka/bidProcessor.js'
 
-
 const term = termkit.terminal
 
 term.grabInput(true)
