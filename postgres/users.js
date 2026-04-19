@@ -10,11 +10,11 @@ import client from './client.js'
 // or that they do not yet exist when registering a new account.
 async function verify_login(identifier, password) {
   const result = await client.query(
-    `SELECT id FROM accounts
+    `SELECT id, username FROM accounts
      WHERE (email = $1 OR username = $1) AND password = $2`,
     [identifier, password]
   )
-  return result.rowCount > 0
+  return result.rows[0] ?? null
 }
 
 // Similar to verify_login above, will check db to see if this email has been used alreadu or not.
