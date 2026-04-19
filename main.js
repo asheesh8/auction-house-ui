@@ -1,5 +1,8 @@
 import termkit from 'terminal-kit'
 import db from './postgres/index.js'
+import { get_auction } from './mongo/auction.js'
+
+
 
 const term = termkit.terminal
 
@@ -106,7 +109,7 @@ async function showMenu() {
   term.clear()
   term.moveTo(1, 2).bold('Menu\n')
 
-  const choice = await term.singleColumnMenu(['Option 1', 'Option 2', 'Log Out'], {
+  const choice = await term.singleColumnMenu(['Display Auction', 'Option 2', 'Log Out'], {
     cancelable: true,
   }).promise
 
@@ -114,8 +117,13 @@ async function showMenu() {
     await showAuthScreen()
     return
   }
-  if (choice.selectedText === 'Option 1') {
-    await showPlaceholder('Option 1')
+  if (choice.selectedText === 'Display Auction') {
+    const auction = await get_auction(1)
+    console.log(auction.item)
+    console.log(auction.description)
+    console.log(auction.start_date)
+    console.log(auction.end_date)
+    console.log(auction.active)
   }
   if (choice.selectedText === 'Option 2') {
     await showPlaceholder('Option 2')

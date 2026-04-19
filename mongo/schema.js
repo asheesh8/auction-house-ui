@@ -5,6 +5,7 @@ await database();
 
 // Auction table. Could use references for ids however it might be easier not to for working with other databases.
 const auctions = new mongoose.Schema({
+    auction_id: {type: Number, required: true, unique: true},
     seller_id: {type: Number, required: true},
     item: {type: String, required: true},
     description: String,
@@ -15,6 +16,7 @@ const auctions = new mongoose.Schema({
 
 // Bids table. Same as above table for references.
 const bids = new mongoose.Schema({
+    bid_id: {type: Number, required: true, unique: true},
     auction_id: {type: Number, required: true},
     account_id: {type: Number, required: true},
     amount: {type: Number, required: true},
