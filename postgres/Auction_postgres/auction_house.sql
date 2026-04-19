@@ -23,7 +23,8 @@ CREATE TABLE IF NOT EXISTS auctions (
     end_date TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP + interval '4 days',
     status VARCHAR(20) CHECK (status IN ('In-Progress', 'Finished'))
     --NOTE: due to circular references, top_bid is being moved to bids
-);
+); --TODO: add constraint to ensure that if auction is in-progress, item_name is unique
+
 
 -- Bids: contains all bids made on auctions, past and present (how long should all this data stay for? forever?)
 CREATE TABLE IF NOT EXISTS bids (
@@ -31,7 +32,7 @@ CREATE TABLE IF NOT EXISTS bids (
     auction_id INT NOT NULL REFERENCES auctions(id),
     account_id UUID REFERENCES accounts(id),
     amount FLOAT,
-    top_bid BOOLEAN,
+    top_bid BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     --TODO: adjust type to reflect actual money values
 );

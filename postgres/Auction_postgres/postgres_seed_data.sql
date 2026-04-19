@@ -28,6 +28,12 @@ INSERT INTO bids (auction_id, account_id, amount, top_bid)
 VALUES
     ((SELECT id FROM auctions WHERE item_name = 'House of the Dead Original Arcade Machine' LIMIT 1), (SELECT id FROM accounts WHERE email = 'calvin.dibartolo@mymail.champlain.edu' LIMIT 1), 9700.00, TRUE);
 
+INSERT INTO bids (auction_id, account_id, amount, top_bid)
+VALUES
+    ((SELECT id FROM auctions WHERE item_name = 'House of the Dead Original Arcade Machine' LIMIT 1), (SELECT id FROM accounts WHERE email = 'logan.donaghue@mymail.champlain.edu' LIMIT 1), 9700.01, FALSE);
+
+UPDATE bids SET top_bid = TRUE WHERE id = 2;
+
 SELECT
     amount
 FROM bids b

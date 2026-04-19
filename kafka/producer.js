@@ -1,11 +1,12 @@
 import kafka from './client.js'
+import {getAuction, getTopBid} from '../redis/auction.js'
 // TODO: import isAuctionActive and getCurrentTopBid from redis/auction.js once implemented
 
 const producer = kafka.producer()
 
 // Validates the bid against Redis before pushing to the queue.
 // Returns { valid: boolean, reason?: string }
-async function validateBid(_auctionId, _amount) {
+async function validateBid(auctionId, amount) {
 
   //check redis to see if auction exists + is still running
   const auction = await getAuction(auctionId)
@@ -36,3 +37,7 @@ export async function submitBid(auctionId, accountId, amount) {
 
   return { valid: true }
 }
+
+
+// TODO: need to figure out sessions/ cookies or something to hold user id
+// once user is logged in
