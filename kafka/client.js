@@ -4,7 +4,7 @@ import { Kafka } from 'kafkajs'
 
 const kafka = new Kafka({
   clientId: 'auction-house',
-  brokers: ['localhost:9092']
+  brokers: [(process.env.KAFKA_BROKER || 'localhost:9092')]
 })
 
 export default kafka

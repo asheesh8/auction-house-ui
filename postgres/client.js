@@ -6,11 +6,11 @@ import 'dotenv/config'
 const { Pool } = pg
 
 const client = new Pool({
-  host: 'localhost',
+  host: process.env.POSTGRES_HOST || 'localhost',
   port: 5432,
-  user: "admin", //process.env.POSTGRES_USER,
-  password: "admin", //process.env.POSTGRES_PASSWORD,
-  database: "auction_house",
+  user: process.env.POSTGRES_USER || 'admin',
+  password: process.env.POSTGRES_PASSWORD || 'admin',
+  database: process.env.POSTGRES_DB || 'auction_house',
 })
 
 export default client

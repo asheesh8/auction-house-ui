@@ -1,29 +1,41 @@
 import kafka from './client.js'
-import { setTopBid } from '../redis/auction.js'
+import { getAuction, getTopBid, setTopBid } from '../redis/auction.js'
 import { write_bid } from '../postgres/bids.js'
 
 const consumer = kafka.consumer({ groupId: 'bid-processor' })
+const admin = kafka.admin()
 
-//revalidate on consumer side as check for safety
-async function validateBid(_auctionId, _amount) {
-//main validation already happened in producer before hitting kafka
+// Safety check on the consumer side in case a bad message slips through
+async function validateBid(auctionId, amount) {
+  const auction = await getAuction(auctionId)
+  if (!auction || auction.status !== 'In-Progress') {
+    return { valid: false, reason: 'Auction is not active' }
+  }
+
+  const topBid = await getTopBid(auctionId)
+  if (amount <= topBid) {
+    return { valid: false, reason: `Bid of ${amount} does not beat current top bid of ${topBid}` }
+  }
+
   return { valid: true }
 }
 
 async function processBid(auctionId, accountId, amount) {
   const { valid, reason } = await validateBid(auctionId, amount)
-  if (!valid) return { valid: false, reason }
+  if (!valid) {
+    console.warn(`[bid-processor] rejected bid: ${reason}`)
+    return
+  }
 
-  //update redis with new top bid after kafka processes it
-  await setTopBid(auctionId, amount)
-
-  // write bid to postgres
   await write_bid(auctionId, accountId, amount)
-
-  return { valid: true }
+  await setTopBid(auctionId, amount)
 }
 
 export async function run() {
+  await admin.connect()
+  await admin.createTopics({ topics: [{ topic: 'bids', numPartitions: 1 }] })
+  await admin.disconnect()
+
   await consumer.connect()
   await consumer.subscribe({ topic: 'bids', fromBeginning: false })
 

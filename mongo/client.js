@@ -8,7 +8,8 @@ async function database() {
   const user = process.env.MONGO_USER
   const password = process.env.MONGO_PASSWORD
 
-  return await mongoose.connect(`mongodb://${user}:${password}@127.0.0.1:27017/test?authSource=admin`)
+  const host = process.env.MONGO_HOST || '127.0.0.1'
+  return await mongoose.connect(`mongodb://${user}:${password}@${host}:27017/test?authSource=admin`)
 }
 
 export default database;
