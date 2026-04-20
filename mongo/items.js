@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 import { auctionsExport, bidsExport } from "./schema.js"
 
+/*
 export async function seed_database() {
     const test1 = { auction_id: 1, seller_id: 1, item: 'Vacuum', end_date: '2026-04-20', active: true }
     await auctionsExport.findOneAndUpdate(
@@ -28,3 +29,4 @@ export async function seed_database() {
     )
     
 }
+    */

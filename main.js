@@ -1,6 +1,6 @@
 import termkit from 'terminal-kit'
 import db from './postgres/index.js'
-import { get_auction } from './mongo/auction.js'
+import { get_auction, create_auction } from './mongo/auction.js'
 import redis from './redis/index.js'
 import kafka from './kafka/index.js'
 import { run as runBidProcessor } from './kafka/bidProcessor.js'
@@ -108,7 +108,7 @@ async function showMenu() {
   term.clear()
   term.moveTo(1, 2).bold('Menu\n')
 
-  const choice = await term.singleColumnMenu(['Display Auction', 'Option 2', 'View Auctions', 'Place Bid', 'Log Out'], {
+  const choice = await term.singleColumnMenu(['Display Auction', 'Create Auction', 'View Auctions', 'Place Bid', 'Log Out'], {
     cancelable: true,
   }).promise
 
@@ -124,8 +124,40 @@ async function showMenu() {
     console.log(auction.end_date)
     console.log(auction.active)
   }
-  if (choice.selectedText === 'Option 2') {
-    await showPlaceholder('Option 2')
+  if (choice.selectedText === 'Create Auction') {
+    term.clear()
+    term.moveTo(1, 2).bold('Create New Auction\n').dim('ESC to go back\n\n')
+
+    term('Item Name: ')
+    const item = await term.inputField({ cancelable: true }).promise
+    if (item == undefined) { await showMenu(); return }
+
+    term('\nDescription: ')
+    const description = await term.inputField({ cancelable: true }).promise
+    if (description == undefined) { await showMenu(); return}
+
+    term('\nDuration In Minutes: ')
+    const duration = await term.inputField({ cancelable: true }).promise
+    if (duration == undefined) { await showMenu(); return}
+    const durationMinutes = parseInt(duration)
+
+    const result = await create_auction({
+      item: item,
+      description: description,
+      durationMinutes: durationMinutes
+    })
+
+    if (result) {
+      term('\n Auction created.')
+    }
+    else {
+      term('\n Auction creation failed')
+    }
+
+    term.dim('\n Press any key to return to the menu.')
+    await new Promise(resolve => {
+      term.once('key', async () => {await showMenu(); resolve() })
+    })
   }
   if (choice.selectedText === 'View Auctions') {
     await showViewAuctions()
