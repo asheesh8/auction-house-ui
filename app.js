@@ -15,12 +15,15 @@ import auctionRoutes from './routes/auctions.js'
 const app = express()
 
 // Redis client for session store (separate from ioredis client used elsewhere)
-const sessionRedis = createClient({
-    socket: {
-        host: process.env.REDIS_HOST || 'localhost',
-        port: process.env.REDIS_PORT || 6379,
-    }
-})
+// use REDIS_URL for cloud (Upstash etc), fall back to host/port for local Docker
+const sessionRedis = process.env.REDIS_URL
+    ? createClient({ url: process.env.REDIS_URL })
+    : createClient({
+        socket: {
+            host: process.env.REDIS_HOST || 'localhost',
+            port: process.env.REDIS_PORT || 6379,
+        }
+    })
 await sessionRedis.connect()
 
 app.use(express.urlencoded({ extended: true }))
