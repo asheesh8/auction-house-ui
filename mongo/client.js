@@ -5,11 +5,11 @@ import 'dotenv/config'
 //main().catch(err => console.log(err));
 
 async function database() {
-  const user = process.env.MONGO_USER
-  const password = process.env.MONGO_PASSWORD
+  //uses MONGO_URL for cloud deployments, falls back to individual env vars for local Docker
+  const uri = process.env.MONGO_URL
+    || `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_HOST || '127.0.0.1'}:27017/auction_house?authSource=admin`
 
-  const host = process.env.MONGO_HOST || '127.0.0.1'
-  return await mongoose.connect(`mongodb://${user}:${password}@${host}:27017/test?authSource=admin`)
+  return await mongoose.connect(uri)
 }
 
 export default database;
