@@ -1,8 +1,9 @@
 import kafka from './client.js'
 import { getAuction, getTopBid } from '../redis/auction.js'
 
-const producer = kafka.producer()
-await producer.connect()
+//if kafka is null (no KAFKA_BROKER set), skip producer setup entirely
+const producer = kafka ? kafka.producer() : null
+if (producer) await producer.connect()
 
 async function validateBid(auctionId, amount) {
   const auction = await getAuction(auctionId)
@@ -19,6 +20,9 @@ async function validateBid(auctionId, amount) {
 }
 
 export async function submitBid(auctionId, accountId, amount, comment = '') {
+  //if kafka is unavailable, reject the bid gracefully rather than crashing
+  if (!kafka) return { valid: false, reason: 'Bid service unavailable' }
+
   const { valid, reason } = await validateBid(auctionId, amount)
   if (!valid) return { valid: false, reason }
 

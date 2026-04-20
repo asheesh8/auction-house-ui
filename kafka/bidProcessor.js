@@ -2,8 +2,9 @@ import kafka from './client.js'
 import { getAuction, getTopBid, setTopBid } from '../redis/auction.js'
 import { write_bid, set_top_bid } from '../postgres/bids.js'
 
-const consumer = kafka.consumer({ groupId: 'bid-processor' })
-const admin = kafka.admin()
+//if kafka is null (no KAFKA_BROKER set), skip consumer/admin setup entirely
+const consumer = kafka ? kafka.consumer({ groupId: 'bid-processor' }) : null
+const admin = kafka ? kafka.admin() : null
 
 // Safety check on the consumer side in case a bad message slips through
 async function validateBid(auctionId, amount) {
@@ -33,6 +34,12 @@ async function processBid(auctionId, accountId, amount) {
 }
 
 export async function run() {
+  //if kafka is not configured, warn and skip rather than crashing on startup
+  if (!kafka) {
+    console.warn('[bid-processor] kafka is not configured — skipping bid processor startup')
+    return
+  }
+
   await admin.connect()
   await admin.createTopics({ topics: [{ topic: 'bids', numPartitions: 1 }] })
   await admin.disconnect()
