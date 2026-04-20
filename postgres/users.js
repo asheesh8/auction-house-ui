@@ -1,6 +1,12 @@
 // This file contains the functions for reading or writing to accounts table in the postgres DB.
 import client from './client.js'
+import { createHash } from 'node:crypto';
 
+
+function hash_salt(password) {
+  password += 'diamond'; // appends hash phrase, change as needed
+  return createHash('sha256').update(password).digest('hex');
+}
 
 //TODO: look into drizzle or figure out other way to ensure query security with functions
 
