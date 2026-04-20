@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New Auction — Auction House</title>
+    <script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light') })()</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root, [data-theme="light"] {
+            --bg:           #f7f5f0;
+            --bg-card:      #ffffff;
+            --bg-input:     #f0ede6;
+            --bg-header:    rgba(247,245,240,0.97);
+            --text:         #1a1a1a;
+            --text-muted:   #888;
+            --text-dim:     #ccc;
+            --border:       #e2ddd4;
+            --gold:         #c9a84c;
+            --gold-text:    #8a6820;
+            --gold-glow:    rgba(201,168,76,0.18);
+            --shadow:       0 2px 14px rgba(0,0,0,0.07);
+        }
+        [data-theme="dark"] {
+            --bg:           #0a0a0f;
+            --bg-card:      #12121a;
+            --bg-input:     #0a0a0f;
+            --bg-header:    rgba(10,10,15,0.96);
+            --text:         #e8e8e8;
+            --text-muted:   #555;
+            --text-dim:     #2a2a3e;
+            --border:       #1e1e2e;
+            --gold:         #c9a84c;
+            --gold-text:    #c9a84c;
+            --gold-glow:    rgba(201,168,76,0.18);
+            --shadow:       0 4px 28px rgba(0,0,0,0.45);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; transition: background .25s, color .25s; }
+
+        /* ── header ── */
+        .site-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1.1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-header);
+            position: sticky; top: 0; z-index: 100;
+            backdrop-filter: blur(8px);
+        }
+        .site-logo { font-size: .95rem; font-weight: 700; letter-spacing: .3em; color: var(--gold); text-transform: uppercase; }
+        .header-right { display: flex; align-items: center; gap: .75rem; }
+        .theme-btn {
+            background: none; border: 1px solid var(--border); color: var(--text-muted);
+            width: 34px; height: 34px; border-radius: 50%; font-size: 1rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color .2s, color .2s;
+        }
+        .theme-btn:hover { border-color: var(--gold); color: var(--gold); }
+        .logout-btn {
+            background: transparent; border: 1px solid var(--gold); color: var(--gold-text);
+            padding: .4rem 1rem; font-family: 'Inter', sans-serif; font-size: .82rem; font-weight: 500;
+            cursor: pointer; border-radius: 4px; letter-spacing: .04em; transition: background .2s, color .2s;
+        }
+        .logout-btn:hover { background: var(--gold); color: #fff; }
+
+        /* ── layout ── */
+        .main { max-width: 640px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+        .back {
+            display: inline-flex; align-items: center; gap: .35rem;
+            font-size: .8rem; color: var(--text-muted); text-decoration: none;
+            letter-spacing: .03em; margin-bottom: 1.75rem; transition: color .15s;
+        }
+        .back:hover { color: var(--gold); }
+
+        /* ── form card ── */
+        .form-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-top: 2px solid var(--gold);
+            border-radius: 8px;
+            padding: 2rem 2rem;
+            box-shadow: var(--shadow);
+        }
+        .form-title {
+            font-size: 1.3rem; font-weight: 700; color: var(--text);
+            margin-bottom: 1.75rem;
+        }
+        .form-title span { color: var(--gold-text); }
+
+        /* error */
+        .error {
+            background: rgba(200,40,40,0.08); border: 1px solid rgba(200,40,40,0.22);
+            color: #c0392b; border-radius: 4px; padding: .65rem .9rem;
+            font-size: .85rem; margin-bottom: 1.5rem;
+        }
+        [data-theme="dark"] .error { background: rgba(200,40,40,0.1); border-color: rgba(200,40,40,0.3); color: #e07070; }
+
+        /* form fields */
+        .field { margin-bottom: 1.25rem; }
+        label {
+            display: block; font-size: .72rem; font-weight: 600;
+            letter-spacing: .08em; text-transform: uppercase;
+            color: var(--text-muted); margin-bottom: .4rem;
+        }
+        .label-hint { font-size: .7rem; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--text-muted); margin-left: .4rem; opacity: .7; }
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%; padding: .8rem 1rem;
+            background: var(--bg-input); border: 1px solid var(--border);
+            border-radius: 5px; color: var(--text);
+            font-family: 'Inter', sans-serif; font-size: .95rem;
+            outline: none; transition: border-color .2s, box-shadow .2s;
+            resize: vertical;
+        }
+        input:focus, textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-glow); }
+        input::placeholder, textarea::placeholder { color: var(--text-dim); }
+        textarea { min-height: 90px; line-height: 1.5; }
+
+        /* duration row */
+        .duration-row { display: flex; align-items: center; gap: .75rem; }
+        .duration-row input { width: 90px; flex-shrink: 0; }
+        .duration-label { font-size: .85rem; color: var(--text-muted); }
+
+        /* ── image upload zone ── */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 7px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color .2s, background .2s;
+            position: relative;
+        }
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--gold);
+            background: rgba(201,168,76,0.04);
+        }
+        /* hide the real file input, let the styled zone trigger it */
+        .upload-zone input[type="file"] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+        }
+        .upload-icon { font-size: 1.8rem; margin-bottom: .5rem; }
+        .upload-text { font-size: .88rem; color: var(--text-muted); }
+        .upload-text strong { color: var(--gold-text); }
+        .upload-hint { font-size: .75rem; color: var(--text-dim); margin-top: .25rem; }
+
+        /* image preview grid */
+        .preview-grid { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; }
+        .preview-item { position: relative; width: 90px; height: 70px; }
+        .preview-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 5px; border: 1px solid var(--border); }
+        .preview-item .remove-img {
+            position: absolute; top: -6px; right: -6px;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: #e05050; color: #fff;
+            font-size: .65rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; line-height: 1;
+        }
+
+        /* submit */
+        .submit-btn {
+            width: 100%; padding: .9rem;
+            background: var(--gold); color: #1a1a1a;
+            border: none; border-radius: 5px;
+            font-family: 'Inter', sans-serif; font-size: .95rem; font-weight: 700;
+            letter-spacing: .04em; cursor: pointer; margin-top: 1.75rem;
+            transition: opacity .2s, box-shadow .2s;
+        }
+        .submit-btn:hover { opacity: .88; box-shadow: 0 0 20px var(--gold-glow); }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <span class="site-logo">Auction House</span>
+        <div class="header-right">
+            <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme"></button>
+            <form method="POST" action="/logout" style="margin:0">
+                <button class="logout-btn" type="submit">Log out (<%= user.username %>)</button>
+            </form>
+        </div>
+    </header>
+
+    <main class="main">
+        <a class="back" href="/auctions">&larr; Back to auctions</a>
+
+        <div class="form-card">
+            <h1 class="form-title">List an Item <span>for Auction</span></h1>
+
+            <% if (error) { %><div class="error"><%= error %></div><% } %>
+
+            <form method="POST" action="/auctions/create" enctype="multipart/form-data" id="create-form">
+                <div class="field">
+                    <label for="item_name">Item Name</label>
+                    <input type="text" id="item_name" name="item_name" maxlength="100" placeholder="e.g. Vintage Rolex Submariner" required>
+                </div>
+
+                <div class="field">
+                    <label for="description">Description <span class="label-hint">optional</span></label>
+                    <textarea id="description" name="description" maxlength="1000" placeholder="Describe the item — condition, provenance, notable details…"></textarea>
+                </div>
+
+                <div class="field">
+                    <label for="duration_days">Duration</label>
+                    <div class="duration-row">
+                        <input type="number" id="duration_days" name="duration_days" min="1" max="30" value="4">
+                        <span class="duration-label">days (default 4)</span>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Photos <span class="label-hint">up to 8 images, 5 MB each</span></label>
+                    <!-- styled upload zone — clicking it triggers the hidden file input -->
+                    <div class="upload-zone" id="upload-zone">
+                        <input type="file" name="images" id="images-input" accept="image/*" multiple>
+                        <div class="upload-icon">🖼</div>
+                        <div class="upload-text"><strong>Click to upload</strong> or drag &amp; drop</div>
+                        <div class="upload-hint">PNG, JPG, WEBP — max 5 MB each</div>
+                    </div>
+                    <!-- JS-rendered image previews appear here -->
+                    <div class="preview-grid" id="preview-grid"></div>
+                </div>
+
+                <button class="submit-btn" type="submit">List Auction &rarr;</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // ── theme toggle ──
+        function toggleTheme() {
+            const html = document.documentElement
+            const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
+            html.setAttribute('data-theme', next)
+            localStorage.setItem('theme', next)
+            document.getElementById('theme-btn').textContent = next === 'dark' ? '☀' : '☾'
+        }
+        document.getElementById('theme-btn').textContent =
+            document.documentElement.getAttribute('data-theme') === 'dark' ? '☀' : '☾'
+
+        // ── image preview ──
+        // tracks the FileList as an array so individual files can be removed
+        let selectedFiles = []
+
+        const input = document.getElementById('images-input')
+        const grid  = document.getElementById('preview-grid')
+        const zone  = document.getElementById('upload-zone')
+
+        // rebuild the FileList on the input from selectedFiles
+        // (we use a DataTransfer object since FileList is read-only)
+        function syncInputFiles() {
+            const dt = new DataTransfer()
+            selectedFiles.forEach(f => dt.items.add(f))
+            input.files = dt.files
+        }
+
+        function renderPreviews() {
+            grid.innerHTML = ''
+            selectedFiles.forEach((file, idx) => {
+                const url = URL.createObjectURL(file)
+                const item = document.createElement('div')
+                item.className = 'preview-item'
+                item.innerHTML = `
+                    <img src="${url}" alt="${file.name}">
+                    <span class="remove-img" data-idx="${idx}" title="Remove">✕</span>
+                `
+                grid.appendChild(item)
+            })
+            // remove button handlers
+            grid.querySelectorAll('.remove-img').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const i = parseInt(btn.dataset.idx)
+                    selectedFiles.splice(i, 1)
+                    syncInputFiles()
+                    renderPreviews()
+                })
+            })
+        }
+
+        input.addEventListener('change', () => {
+            const incoming = Array.from(input.files)
+            // deduplicate by name+size, cap at 8 total
+            incoming.forEach(f => {
+                if (selectedFiles.length >= 8) return
+                const dup = selectedFiles.some(s => s.name === f.name && s.size === f.size)
+                if (!dup) selectedFiles.push(f)
+            })
+            syncInputFiles()
+            renderPreviews()
+        })
+
+        // drag-and-drop styling
+        zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover') })
+        zone.addEventListener('dragleave', () => zone.classList.remove('dragover'))
+        zone.addEventListener('drop', e => {
+            e.preventDefault()
+            zone.classList.remove('dragover')
+            const dropped = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'))
+            dropped.forEach(f => {
+                if (selectedFiles.length >= 8) return
+                const dup = selectedFiles.some(s => s.name === f.name && s.size === f.size)
+                if (!dup) selectedFiles.push(f)
+            })
+            syncInputFiles()
+            renderPreviews()
+        })
+    </script>
+</body>
+</html>

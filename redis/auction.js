@@ -16,6 +16,7 @@ async function setAuction(auction) {
     end_date: auction.end_date?.toISOString?.() ?? auction.end_date ?? '',
     top_bid: auction.top_bid ?? 0,//default 0 if no bids yet
     seller: auction.seller ?? '',
+    top_bidder: auction.top_bidder ?? '',
   })
 
   //set a 4 day TTL on 'in-progress' auctions to MATCH WITH postgres default end_date interval
@@ -48,13 +49,14 @@ async function getTopBid(id) {
 
 //update the top bid only if the new amount beats the current one
 //returns true if the bid was accepted, false if it was too low
-async function setTopBid(id, amount) {
+async function setTopBid(id, amount, username = '') {
   const current = await getTopBid(id)
 
   //reject bid if it doesn't beat current top
   if (amount <= current) return false
 
   await client.hset(`auction:${id}`, 'top_bid', amount)
+  if (username) await client.hset(`auction:${id}`, 'top_bidder', username)
   return true
 }
 
@@ -74,6 +76,7 @@ async function getActiveAuctions() {
       results.push({ id, ...data, top_bid: parseFloat(data.top_bid) || 0 })
     }
   }
+  results.sort((a, b) => parseInt(a.id) - parseInt(b.id))
   return results
 }
 
@@ -83,5 +86,22 @@ async function deleteAuction(id) {
   await client.del(`auction:${id}`)
 }
 
+// store a chat message for an auction as a Redis List under key: 'chat:{auction_id}'
+// each entry is a JSON string with username, comment, amount, and timestamp
+// keep only the last 50 messages to avoid unbounded growth
+async function addChatMessage(auctionId, username, amount, comment) {
+  const key = `chat:${auctionId}`
+  const entry = JSON.stringify({ username, amount, comment, timestamp: new Date().toISOString() })
+  await client.rpush(key, entry)
+  await client.ltrim(key, -50, -1) // keep last 50 only
+}
+
+// get all chat messages for an auction, oldest first
+async function getChatMessages(auctionId) {
+  const key = `chat:${auctionId}`
+  const entries = await client.lrange(key, 0, -1)
+  return entries.map(e => JSON.parse(e))
+}
+
 //export all functions so they can be used
-export { setAuction, getAuction, getTopBid, setTopBid, getActiveAuctions, deleteAuction }
+export { setAuction, getAuction, getTopBid, setTopBid, getActiveAuctions, deleteAuction, addChatMessage, getChatMessages }

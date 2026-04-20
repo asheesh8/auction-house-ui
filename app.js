@@ -2,7 +2,11 @@ import express from 'express'
 import session from 'express-session'
 import { createClient } from 'redis'
 import { RedisStore } from 'connect-redis'
+import fs from 'fs'
 import 'dotenv/config'
+
+// ensure the uploads directory exists before serving static files
+fs.mkdirSync('./public/uploads', { recursive: true })
 
 import { run as runBidProcessor } from './kafka/bidProcessor.js'
 import authRoutes from './routes/auth.js'
@@ -21,6 +25,8 @@ await sessionRedis.connect()
 
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
+// serve uploaded auction images
+app.use('/uploads', express.static('./public/uploads'))
 app.set('view engine', 'ejs')
 app.set('views', './views')
 

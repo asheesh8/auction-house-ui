@@ -18,14 +18,14 @@ async function validateBid(auctionId, amount) {
   return { valid: true }
 }
 
-export async function submitBid(auctionId, accountId, amount) {
+export async function submitBid(auctionId, accountId, amount, comment = '') {
   const { valid, reason } = await validateBid(auctionId, amount)
   if (!valid) return { valid: false, reason }
 
   await producer.send({
     topic: 'bids',
     messages: [
-      { value: JSON.stringify({ auctionId, accountId, amount }) }
+      { value: JSON.stringify({ auctionId, accountId, amount, comment }) }
     ]
   })
 

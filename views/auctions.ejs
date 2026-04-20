@@ -3,42 +3,265 @@
 <head>
     <meta charset="UTF-8">
     <title>Auctions — Auction House</title>
+    <!-- apply saved theme before CSS renders to prevent flash -->
+    <script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light') })()</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 1rem; }
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        h1 { margin: 0; }
-        .logout { background: none; border: 1px solid #333; padding: .4rem .8rem; cursor: pointer; }
-        .auction-list { list-style: none; padding: 0; margin: 0; }
-        .auction-list li { border: 1px solid #ddd; padding: 1rem; margin-bottom: .75rem; border-radius: 4px; }
-        .auction-list li a { text-decoration: none; color: #333; font-size: 1.1rem; font-weight: bold; }
-        .auction-list li a:hover { text-decoration: underline; }
-        .meta { color: #666; font-size: .9rem; margin-top: .25rem; }
-        .empty { color: #999; }
+        /* ── theme tokens ── */
+        :root, [data-theme="light"] {
+            --bg:          #f7f5f0;
+            --bg-card:     #ffffff;
+            --bg-input:    #f0ede6;
+            --bg-header:   rgba(247,245,240,0.97);
+            --text:        #1a1a1a;
+            --text-muted:  #888;
+            --text-dim:    #ccc;
+            --border:      #e2ddd4;
+            --gold:        #c9a84c;
+            --gold-text:   #8a6820;
+            --gold-glow:   rgba(201,168,76,0.18);
+            --shadow:      0 2px 14px rgba(0,0,0,0.07);
+            --shadow-hover:0 8px 28px rgba(0,0,0,0.11);
+        }
+        [data-theme="dark"] {
+            --bg:          #0a0a0f;
+            --bg-card:     #12121a;
+            --bg-input:    #0a0a0f;
+            --bg-header:   rgba(10,10,15,0.96);
+            --text:        #e8e8e8;
+            --text-muted:  #555;
+            --text-dim:    #2a2a3e;
+            --border:      #1e1e2e;
+            --gold:        #c9a84c;
+            --gold-text:   #c9a84c;
+            --gold-glow:   rgba(201,168,76,0.18);
+            --shadow:      0 4px 28px rgba(0,0,0,0.45);
+            --shadow-hover:0 10px 36px rgba(201,168,76,0.18);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; transition: background .25s, color .25s; }
+
+        /* ── header ── */
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-header);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(8px);
+        }
+        .site-logo {
+            font-size: .95rem;
+            font-weight: 700;
+            letter-spacing: .3em;
+            color: var(--gold);
+            text-transform: uppercase;
+        }
+        .header-right { display: flex; align-items: center; gap: .75rem; }
+
+        /* theme toggle */
+        .theme-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color .2s, color .2s;
+        }
+        .theme-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+        /* ghost logout button */
+        .logout-btn {
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold-text);
+            padding: .4rem 1rem;
+            font-family: 'Inter', sans-serif;
+            font-size: .82rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 4px;
+            letter-spacing: .04em;
+            transition: background .2s, color .2s;
+        }
+        .logout-btn:hover { background: var(--gold); color: #fff; }
+
+        /* ── main layout ── */
+        .main { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+        /* ── hero banner ── */
+        .hero { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end; }
+        .hero-left h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+            margin-bottom: .5rem;
+        }
+        .live-dot {
+            width: 9px; height: 9px;
+            border-radius: 50%;
+            background: var(--gold);
+            flex-shrink: 0;
+            animation: pulse 1.8s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--gold); }
+            50%       { opacity: .5; box-shadow: 0 0 16px var(--gold); }
+        }
+        .hero-underline {
+            display: block;
+            width: 48px; height: 2px;
+            background: linear-gradient(90deg, var(--gold), transparent);
+            border-radius: 2px;
+        }
+
+        /* create auction button */
+        .create-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            background: var(--gold);
+            color: #1a1a1a;
+            padding: .55rem 1.2rem;
+            border-radius: 5px;
+            font-family: 'Inter', sans-serif;
+            font-size: .85rem;
+            font-weight: 700;
+            letter-spacing: .03em;
+            text-decoration: none;
+            transition: opacity .2s, box-shadow .2s;
+            white-space: nowrap;
+        }
+        .create-btn:hover { opacity: .88; box-shadow: 0 0 16px var(--gold-glow); }
+
+        /* empty state */
+        .empty { color: var(--text-muted); font-size: .95rem; text-align: center; padding: 5rem 0; }
+
+        /* ── auction cards ── */
+        .auction-list { list-style: none; display: grid; gap: .85rem; }
+        .auction-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-top: 2px solid var(--gold);
+            border-radius: 7px;
+            padding: 1.2rem 1.4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: var(--shadow);
+            transition: transform .2s, box-shadow .2s;
+        }
+        .auction-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+        .card-body { flex: 1; min-width: 0; }
+        .card-title {
+            display: block;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text);
+            text-decoration: none;
+            margin-bottom: .5rem;
+            transition: color .15s;
+        }
+        .card-title:hover { color: var(--gold); }
+        .card-meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: .35rem .6rem; }
+        .meta-bid  { font-size: .95rem; font-weight: 700; color: var(--gold-text); }
+        .meta-bidder { font-size: .78rem; color: var(--text-muted); }
+        .meta-bidder strong { color: var(--text-muted); font-weight: 600; }
+        .meta-sep  { color: var(--border); }
+        .meta-date { font-size: .78rem; color: var(--text-muted); }
+        .meta-desc {
+            font-size: .77rem; color: var(--text-muted);
+            width: 100%; margin-top: .2rem;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .gavel-icon { flex-shrink: 0; width: 36px; height: 36px; opacity: .18; transition: opacity .2s; }
+        [data-theme="light"] .gavel-icon { opacity: .12; }
+        .auction-card:hover .gavel-icon { opacity: .35; }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Active Auctions</h1>
-        <form method="POST" action="/logout">
-            <button class="logout" type="submit">Log out (<%= user.username %>)</button>
-        </form>
+    <header class="site-header">
+        <span class="site-logo">Auction House</span>
+        <div class="header-right">
+            <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme"></button>
+            <form method="POST" action="/logout" style="margin:0">
+                <button class="logout-btn" type="submit">Log out (<%= user.username %>)</button>
+            </form>
+        </div>
     </header>
 
-    <% if (auctions.length === 0) { %>
-        <p class="empty">No active auctions right now.</p>
-    <% } else { %>
-        <ul class="auction-list">
-            <% auctions.forEach(a => { %>
-            <li>
-                <a href="/auctions/<%= a.id %>"><%= a.item_name %></a>
-                <div class="meta">
-                    Top bid: $<%= a.top_bid.toFixed(2) %> &nbsp;|&nbsp;
-                    Ends: <%= new Date(a.end_date).toLocaleDateString() %>
-                    <% if (a.description && a.description.length > 0) { %> &nbsp;|&nbsp; <%= a.description %><% } %>
-                </div>
-            </li>
-            <% }) %>
-        </ul>
-    <% } %>
+    <main class="main">
+        <div class="hero">
+            <div class="hero-left">
+                <h1><span class="live-dot"></span>Live Auctions</h1>
+                <span class="hero-underline"></span>
+            </div>
+            <a class="create-btn" href="/auctions/create">+ New Auction</a>
+        </div>
+
+        <% if (auctions.length === 0) { %>
+            <p class="empty">No active auctions right now.</p>
+        <% } else { %>
+            <ul class="auction-list">
+                <% auctions.forEach(a => { %>
+                <li>
+                    <div class="auction-card">
+                        <div class="card-body">
+                            <a class="card-title" href="/auctions/<%= a.id %>"><%= a.item_name %></a>
+                            <div class="card-meta">
+                                <span class="meta-bid">$<%= a.top_bid.toFixed(2) %></span>
+                                <% if (a.top_bidder) { %>
+                                <span class="meta-bidder">by <strong><%= a.top_bidder %></strong></span>
+                                <% } %>
+                                <span class="meta-sep">·</span>
+                                <span class="meta-date">Ends <%= new Date(a.end_date).toLocaleDateString() %></span>
+                                <% if (a.description && a.description.length > 0) { %>
+                                <span class="meta-desc"><%= a.description %></span>
+                                <% } %>
+                            </div>
+                        </div>
+                        <!-- decorative gavel icon -->
+                        <svg class="gavel-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="6" y="24" width="34" height="11" rx="3" transform="rotate(-45 6 24)" fill="#c9a84c"/>
+                            <rect x="28" y="44" width="26" height="9" rx="4.5" fill="#c9a84c"/>
+                            <rect x="22" y="8" width="16" height="10" rx="3" transform="rotate(-45 22 8)" fill="#c9a84c" opacity=".6"/>
+                        </svg>
+                    </div>
+                </li>
+                <% }) %>
+            </ul>
+        <% } %>
+    </main>
+
+    <script>
+        // theme toggle — no flash because inline script at top of <head> already set data-theme
+        function toggleTheme() {
+            const html = document.documentElement
+            const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
+            html.setAttribute('data-theme', next)
+            localStorage.setItem('theme', next)
+            document.getElementById('theme-btn').textContent = next === 'dark' ? '☀' : '☾'
+        }
+        // set correct icon on initial load
+        document.getElementById('theme-btn').textContent =
+            document.documentElement.getAttribute('data-theme') === 'dark' ? '☀' : '☾'
+    </script>
 </body>
 </html>

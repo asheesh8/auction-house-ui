@@ -35,4 +35,16 @@ async function write_auction(seller, item, desc) {
 // console.log(auctions);
 //TODO: functions for updating auction state and other administrative tasks
 
-export { get_active_auctions, get_auction_details, write_auction }
+// create a new auction and return its postgres id, so callers can sync it to other stores
+async function create_auction_pg(seller_id, item_name, description) {
+    const result = await client.query(
+        "INSERT INTO auctions (seller, item_name, description) VALUES ($1, $2, $3) RETURNING id",
+        [seller_id, item_name, description]
+    )
+    const id = parseInt(result.rows[0].id)
+    // seed the required starting bid so the top-bid system works from the start
+    await write_starting_bid(id, seller_id)
+    return id
+}
+
+export { get_active_auctions, get_auction_details, write_auction, create_auction_pg }

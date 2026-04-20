@@ -3,47 +3,323 @@
 <head>
     <meta charset="UTF-8">
     <title><%= auction.item %> — Auction House</title>
+    <!-- apply saved theme before CSS renders to prevent flash -->
+    <script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light') })()</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 1rem; }
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        h1 { margin: 0; }
-        .logout { background: none; border: 1px solid #333; padding: .4rem .8rem; cursor: pointer; }
-        .back { display: inline-block; margin-bottom: 1.5rem; color: #555; text-decoration: none; }
-        .back:hover { text-decoration: underline; }
-        .detail { margin-bottom: 1.5rem; }
-        .detail p { margin: .4rem 0; }
-        .top-bid { font-size: 1.4rem; font-weight: bold; margin-bottom: 1.5rem; }
-        .bid-form { display: flex; gap: .5rem; }
-        .bid-form input { flex: 1; padding: .5rem; }
-        .bid-form button { padding: .5rem 1rem; background: #333; color: #fff; border: none; cursor: pointer; }
-        .bid-form button:hover { background: #555; }
-        .error { color: red; margin-bottom: 1rem; }
+        /* ── theme tokens ── */
+        :root, [data-theme="light"] {
+            --bg:           #f7f5f0;
+            --bg-card:      #ffffff;
+            --bg-input:     #f0ede6;
+            --bg-header:    rgba(247,245,240,0.97);
+            --text:         #1a1a1a;
+            --text-muted:   #888;
+            --text-dim:     #ccc;
+            --border:       #e2ddd4;
+            --gold:         #c9a84c;
+            --gold-text:    #8a6820;
+            --gold-glow:    rgba(201,168,76,0.18);
+            --shadow:       0 2px 14px rgba(0,0,0,0.07);
+            --shadow-hover: 0 8px 28px rgba(0,0,0,0.11);
+        }
+        [data-theme="dark"] {
+            --bg:           #0a0a0f;
+            --bg-card:      #12121a;
+            --bg-input:     #0a0a0f;
+            --bg-header:    rgba(10,10,15,0.96);
+            --text:         #e8e8e8;
+            --text-muted:   #555;
+            --text-dim:     #2a2a3e;
+            --border:       #1e1e2e;
+            --gold:         #c9a84c;
+            --gold-text:    #c9a84c;
+            --gold-glow:    rgba(201,168,76,0.18);
+            --shadow:       0 4px 28px rgba(0,0,0,0.45);
+            --shadow-hover: 0 10px 36px rgba(201,168,76,0.18);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; transition: background .25s, color .25s; }
+
+        /* ── header ── */
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-header);
+            position: sticky; top: 0; z-index: 100;
+            backdrop-filter: blur(8px);
+        }
+        .site-logo { font-size: .95rem; font-weight: 700; letter-spacing: .3em; color: var(--gold); text-transform: uppercase; }
+        .header-right { display: flex; align-items: center; gap: .75rem; }
+        .theme-btn {
+            background: none; border: 1px solid var(--border); color: var(--text-muted);
+            width: 34px; height: 34px; border-radius: 50%; font-size: 1rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color .2s, color .2s;
+        }
+        .theme-btn:hover { border-color: var(--gold); color: var(--gold); }
+        .logout-btn {
+            background: transparent; border: 1px solid var(--gold); color: var(--gold-text);
+            padding: .4rem 1rem; font-family: 'Inter', sans-serif; font-size: .82rem; font-weight: 500;
+            cursor: pointer; border-radius: 4px; letter-spacing: .04em; transition: background .2s, color .2s;
+        }
+        .logout-btn:hover { background: var(--gold); color: #fff; }
+
+        /* ── page layout ── */
+        .main { max-width: 680px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+
+        /* breadcrumb */
+        .back {
+            display: inline-flex; align-items: center; gap: .35rem;
+            font-size: .8rem; color: var(--text-muted); text-decoration: none;
+            letter-spacing: .03em; margin-bottom: 1.75rem; transition: color .15s;
+        }
+        .back:hover { color: var(--gold); }
+
+        /* ── CSS 3D pedestal showcase ── */
+        .showcase { perspective: 800px; display: flex; flex-direction: column; align-items: center; margin-bottom: 2rem; }
+        .pedestal-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-top: 2px solid var(--gold);
+            border-radius: 8px;
+            padding: 1.75rem 2.5rem;
+            text-align: center;
+            width: 100%;
+            box-shadow: var(--shadow);
+            animation: itemFloat 5s ease-in-out infinite;
+        }
+        @keyframes itemFloat {
+            0%, 100% { transform: translateY(0px) rotateX(2deg); }
+            50%       { transform: translateY(-8px) rotateX(-1deg); }
+        }
+        .pedestal-label {
+            font-size: .65rem; font-weight: 700; letter-spacing: .2em;
+            color: var(--gold-text); text-transform: uppercase; margin-bottom: .5rem;
+        }
+        .pedestal-item-name { font-size: 1.5rem; font-weight: 700; color: var(--text); line-height: 1.3; }
+        .pedestal-desc { margin-top: .6rem; font-size: .88rem; color: var(--text-muted); }
+        .pedestal-end { margin-top: .4rem; font-size: .75rem; color: var(--text-dim); letter-spacing: .04em; }
+        /* soft glow under the card to complete the pedestal illusion */
+        .pedestal-shadow {
+            width: 70%; height: 10px;
+            background: radial-gradient(ellipse, var(--gold-glow), transparent 70%);
+            border-radius: 50%;
+            margin-top: .2rem;
+            animation: shadowPulse 5s ease-in-out infinite;
+        }
+        @keyframes shadowPulse {
+            0%, 100% { opacity: .7; transform: scaleX(1); }
+            50%       { opacity: .3; transform: scaleX(.8); }
+        }
+
+        /* ── image gallery ── */
+        .img-gallery { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1.75rem; }
+        .img-gallery img {
+            width: 130px; height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: transform .2s, box-shadow .2s;
+        }
+        .img-gallery img:hover { transform: scale(1.04); box-shadow: var(--shadow-hover); }
+
+        /* ── bid state display ── */
+        .bid-display { margin-bottom: 1.5rem; }
+        .bid-label { font-size: .65rem; font-weight: 700; letter-spacing: .15em; color: var(--text-muted); text-transform: uppercase; margin-bottom: .35rem; }
+        .bid-amount { font-size: 2.2rem; font-weight: 700; color: var(--gold-text); letter-spacing: .02em; line-height: 1; }
+        .bid-leader { margin-top: .4rem; font-size: .85rem; color: var(--text-muted); }
+        .bid-leader strong { color: var(--text); font-weight: 600; }
+
+        /* winner banner */
+        .winner-banner {
+            display: flex; align-items: center; gap: 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--gold);
+            border-radius: 8px;
+            padding: 1.1rem 1.4rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 0 20px var(--gold-glow);
+        }
+        .trophy { font-size: 1.8rem; line-height: 1; }
+        .winner-title { font-size: .65rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--gold-text); margin-bottom: .25rem; }
+        .winner-details { font-size: .95rem; color: var(--text); }
+        .winner-details strong { color: var(--gold-text); }
+
+        /* error */
+        .error {
+            background: var(--error-bg, rgba(200,40,40,0.07));
+            border: 1px solid var(--error-border, rgba(200,40,40,0.2));
+            color: var(--error-text, #c0392b);
+            border-radius: 4px; padding: .65rem .9rem; font-size: .85rem; margin-bottom: 1.25rem;
+        }
+        [data-theme="dark"] .error {
+            background: rgba(200,40,40,0.1);
+            border-color: rgba(200,40,40,0.3);
+            color: #e07070;
+        }
+
+        /* ── bid form ── */
+        .bid-form { display: flex; flex-direction: column; gap: .7rem; margin-bottom: 2rem; }
+        .bid-form input[type="number"],
+        .bid-form input[type="text"] {
+            width: 100%; padding: .8rem 1rem;
+            background: var(--bg-input); border: 1px solid var(--border);
+            border-radius: 5px; color: var(--text);
+            font-family: 'Inter', sans-serif; font-size: .95rem;
+            outline: none; transition: border-color .2s, box-shadow .2s;
+        }
+        .bid-form input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-glow); }
+        .bid-form input::placeholder { color: var(--text-dim); }
+        .bid-submit {
+            width: 100%; padding: .9rem;
+            background: var(--gold); color: #1a1a1a;
+            border: none; border-radius: 5px;
+            font-family: 'Inter', sans-serif; font-size: .95rem; font-weight: 700;
+            letter-spacing: .04em; cursor: pointer;
+            transition: opacity .2s, box-shadow .2s, transform .1s;
+        }
+        .bid-submit:hover { opacity: .88; box-shadow: 0 0 20px var(--gold-glow); transform: translateY(-1px); }
+        .bid-submit:active { transform: translateY(0); }
+
+        /* ── bid activity / chat ── */
+        .chat { margin-top: 2.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem; }
+        .chat-heading {
+            font-size: .65rem; font-weight: 700; letter-spacing: .2em;
+            text-transform: uppercase; color: var(--text-muted); margin-bottom: 1.1rem;
+        }
+        .no-comments { color: var(--text-muted); font-size: .88rem; padding: .5rem 0; }
+        .chat-list { list-style: none; display: flex; flex-direction: column; gap: .7rem; }
+        .chat-list li { display: flex; align-items: flex-start; gap: .8rem; }
+        /* colored avatar circle — hue from first char of username */
+        .avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .78rem; font-weight: 700; color: #fff;
+            flex-shrink: 0; margin-top: .1rem;
+        }
+        .chat-content { flex: 1; min-width: 0; }
+        .chat-row1 { display: flex; flex-wrap: wrap; align-items: baseline; gap: .35rem; margin-bottom: .2rem; }
+        .who       { font-weight: 600; font-size: .88rem; color: var(--text); }
+        .bid-amount-inline { font-size: .88rem; font-weight: 700; color: var(--gold-text); }
+        .when      { font-size: .73rem; color: var(--text-muted); }
+        .chat-comment { font-size: .83rem; color: var(--text-muted); font-style: italic; }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Auction House</h1>
-        <form method="POST" action="/logout">
-            <button class="logout" type="submit">Log out (<%= user.username %>)</button>
-        </form>
+    <header class="site-header">
+        <span class="site-logo">Auction House</span>
+        <div class="header-right">
+            <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme"></button>
+            <form method="POST" action="/logout" style="margin:0">
+                <button class="logout-btn" type="submit">Log out (<%= user.username %>)</button>
+            </form>
+        </div>
     </header>
 
-    <a class="back" href="/auctions">&larr; Back to auctions</a>
+    <main class="main">
+        <!-- breadcrumb -->
+        <a class="back" href="/auctions">&larr; Back to auctions</a>
 
-    <div class="detail">
-        <h2><%= auction.item %></h2>
-        <% if (auction.description) { %><p><%= auction.description %></p><% } %>
-        <p>Ends: <%= new Date(auction.end_date).toLocaleDateString() %></p>
-    </div>
+        <!-- CSS 3D pedestal showcase — floating animation suggests item is on display -->
+        <div class="showcase">
+            <div class="pedestal-item">
+                <div class="pedestal-label">On Auction</div>
+                <div class="pedestal-item-name"><%= auction.item %></div>
+                <% if (auction.description) { %><div class="pedestal-desc"><%= auction.description %></div><% } %>
+                <div class="pedestal-end">Ends &nbsp;<%= new Date(auction.end_date).toLocaleDateString() %></div>
+            </div>
+            <div class="pedestal-shadow"></div>
+        </div>
 
-    <p class="top-bid">Current top bid: $<%= top_bid.toFixed(2) %></p>
+        <!-- auction images uploaded by the seller -->
+        <% if (auction.images && auction.images.length > 0) { %>
+        <div class="img-gallery">
+            <% auction.images.forEach(src => { %>
+            <img src="<%= src %>" alt="Auction item photo">
+            <% }) %>
+        </div>
+        <% } %>
 
-    <% if (error) { %><p class="error"><%= error %></p><% } %>
+        <!-- bid state: winner banner if finished, current bid if active -->
+        <% if (auction.status === 'Finished') { %>
+        <div class="winner-banner">
+            <span class="trophy">🏆</span>
+            <div>
+                <div class="winner-title">Auction Closed</div>
+                <div class="winner-details">
+                    Final bid: <strong>$<%= top_bid.toFixed(2) %></strong>
+                    <% if (auction.top_bidder) { %>&mdash; Won by <strong><%= auction.top_bidder %></strong><% } %>
+                </div>
+            </div>
+        </div>
+        <% } else { %>
+        <div class="bid-display">
+            <div class="bid-label">Current Top Bid</div>
+            <div class="bid-amount">$<%= top_bid.toFixed(2) %></div>
+            <% if (auction.top_bidder) { %>
+            <div class="bid-leader">Leading: <strong><%= auction.top_bidder %></strong></div>
+            <% } %>
+        </div>
+        <% } %>
 
-    <form class="bid-form" method="POST" action="/bid">
-        <input type="hidden" name="auction_id" value="<%= auction.auction_id %>">
-        <input type="number" name="amount" step="0.01" min="0.01" placeholder="Your bid ($)" required>
-        <button type="submit">Place Bid</button>
-    </form>
+        <% if (error) { %><div class="error"><%= error %></div><% } %>
+
+        <!-- bid form — hidden once auction is finished -->
+        <% if (auction.status !== 'Finished') { %>
+        <form class="bid-form" method="POST" action="/bid">
+            <input type="hidden" name="auction_id" value="<%= auction.auction_id %>">
+            <input type="number" name="amount" step="0.01" min="0.01" placeholder="Your bid ($)" required>
+            <input type="text" name="comment" maxlength="200" placeholder="Add a comment (optional)">
+            <button class="bid-submit" type="submit">Place Bid &rarr;</button>
+        </form>
+        <% } %>
+
+        <!-- bid chat — shows all comments left with bids, newest at bottom -->
+        <div class="chat">
+            <div class="chat-heading">Bid Activity</div>
+            <% if (comments.length === 0) { %>
+                <p class="no-comments">No comments yet. Be the first to bid and leave a note!</p>
+            <% } else { %>
+                <ul class="chat-list">
+                    <% comments.forEach(c => { %>
+                    <li>
+                        <!-- avatar circle with hue derived from first character of username -->
+                        <div class="avatar" style="background: hsl(<%= (c.username.charCodeAt(0) * 47) % 360 %>, 55%, 48%);">
+                            <%= c.username.charAt(0).toUpperCase() %>
+                        </div>
+                        <div class="chat-content">
+                            <div class="chat-row1">
+                                <span class="who"><%= c.username %></span>
+                                <span class="bid-amount-inline">bid $<%= parseFloat(c.amount).toFixed(2) %></span>
+                                <span class="when"><%= new Date(c.timestamp).toLocaleString() %></span>
+                            </div>
+                            <% if (c.comment) { %><div class="chat-comment"><%= c.comment %></div><% } %>
+                        </div>
+                    </li>
+                    <% }) %>
+                </ul>
+            <% } %>
+        </div>
+    </main>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement
+            const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
+            html.setAttribute('data-theme', next)
+            localStorage.setItem('theme', next)
+            document.getElementById('theme-btn').textContent = next === 'dark' ? '☀' : '☾'
+        }
+        document.getElementById('theme-btn').textContent =
+            document.documentElement.getAttribute('data-theme') === 'dark' ? '☀' : '☾'
+    </script>
 </body>
 </html>

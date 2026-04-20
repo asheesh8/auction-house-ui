@@ -11,7 +11,8 @@ const auctions = new mongoose.Schema({
     description: String,
     start_date: {type: Date, default: Date.now},
     end_date: {type: Date, required: true},
-    active: {type: Boolean, required: true}
+    active: {type: Boolean, required: true},
+    images: { type: [String], default: [] } // uploaded image paths, e.g. ['/uploads/abc.jpg']
 });
 
 // Bids table. Same as above table for references.

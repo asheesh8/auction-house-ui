@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node postgres/schema.js)",
+      "Bash(node seed.js)",
+      "Bash(node redis/schema.js)",
+      "Bash(node:*)",
+      "Bash(docker compose up:*)"
+    ]
+  }
+}
