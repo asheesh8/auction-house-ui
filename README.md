@@ -20,6 +20,13 @@ Each team member needs these installed:
    npm install
    ```
 
+3. **Create your local `.env`:**
+   ```bash
+   cp .env.example .env
+   ```
+   The example holds the local Docker credentials. `.env` itself is git-ignored, so
+   anything you change there (or any real cloud credentials) never gets committed.
+
 4. **Start all databases:**
    ```bash
    docker compose up -d
@@ -86,7 +93,7 @@ docker compose down -v
 
 ## The .env file
 
-The `.env` file in the root of the project stores credentials (database usernames, passwords, etc.). Instead of hardcoding these values directly in your code, you read them via `process.env.VARIABLE_NAME`. The `dotenv` library loads the `.env` file automatically when your code runs.
+The `.env` file in the root of the project (created from `.env.example`, never committed) stores credentials (database usernames, passwords, etc.). Instead of hardcoding these values directly in your code, you read them via `process.env.VARIABLE_NAME`. The `dotenv` library loads the `.env` file automatically when your code runs.
 
 At the top of your `client.js`, add:
 ```js
