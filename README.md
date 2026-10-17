@@ -1,116 +1,46 @@
-# Auction House — Backend Setup
+# Auction House UI
 
-## Prerequisites
+CSI-300 project for browsing an auction catalog and comparing items. Docker Compose starts the app, seeds the local databases, and provides dashboards for the backing services.
 
-Each team member needs these installed:
+## Requirements
 
-| Tool | Download |
-|------|----------|
-| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | Runs all the databases |
-| [Node.js LTS](https://nodejs.org/) | Runs your JavaScript code |
+- Docker Desktop with Compose
+- Node.js LTS (for running the app outside Docker)
 
----
+## Set up
 
-## First-time setup
+1. Copy `.env.example` to `.env` and replace the placeholder values with local-only credentials.
+   - PowerShell: `Copy-Item .env.example .env`
+   - Git Bash/macOS/Linux: `cp .env.example .env`
+2. Start the app and its services: `docker compose up --build -d`
+3. Check the containers: `docker compose ps`
+4. Open the app at `http://localhost:3000`.
 
-1. **Clone the repo** and open a terminal in the project folder.
+Keep `.env` on your machine. It is ignored by Git; commit changes to `.env.example` only. Set a unique local `SESSION_SECRET`; do not use a production credential here.
 
-2. **Install JS dependencies:**
-   ```bash
-   npm install
-   ```
+## Local dashboards
 
-4. **Start all databases:**
-   ```bash
-   docker compose up -d
-   ```
-   The `-d` flag runs them in the background. First run will download the images (~a few minutes).
+| Service | Address |
+|---|---|
+| pgAdmin | `http://localhost:5050` |
+| Adminer | `http://localhost:8084` |
+| Mongo Express | `http://localhost:8082` |
+| Redis Commander | `http://localhost:8081` |
+| Kafka UI | `http://localhost:8083` |
 
-5. **Verify everything is running:**
-   ```bash
-   docker compose ps
-   ```
-   All services should show `running`.
+Use the local `.env` values for dashboard logins. From pgAdmin or Adminer, use `postgres` as the PostgreSQL host because those dashboards run in Docker.
 
----
-
-## Services & ports
-
-| Service | Port | Purpose |
-|---------|------|---------|
-| PostgreSQL | `5432` | Relational database |
-| MongoDB | `27017` | Document database |
-| Redis | `6379` | In-memory key/value store |
-| Kafka | `9092` | Message broker |
-
-## UI Dashboards (open in browser)
-
-| Dashboard | URL | Login |
-|-----------|-----|-------|
-| pgAdmin (Postgres) | http://localhost:5050 | `admin@admin.com` / `admin` |
-| Adminer (Postgres) | http://localhost:8084 | System: `PostgreSQL`, Server: `postgres`, Username/Password/Database: from `.env` |
-| Mongo Express | http://localhost:8082 | none |
-| Redis Commander | http://localhost:8081 | none |
-| Kafka UI | http://localhost:8083 | none |
-
-> **pgAdmin first login:** After signing in, you need to add a server manually.
-> Right-click Servers → Register → Server.
-> - Name: `auction-house`
-> - Host: `postgres`  (not localhost — Docker uses the service name)
-> - Port: `5432`
-> - Username: `admin`
-> - Password: `admin`
-
----
-
-## Docker commands
+## Useful commands
 
 ```bash
-# Start databases (do this before running your code)
-docker compose up -d
-
-# Check services are running
-docker compose ps
-
-# Stop databases (just pausing them basically)
-docker compose stop
-
-# Full stop + remove containers (data still saved in volumes)
-docker compose down
-
-# Wipe ALL data and start fresh
-docker compose down -v
+docker compose up --build -d  # build and start the stack
+docker compose ps             # check status
+docker compose logs <name>    # inspect a service
+docker compose down           # stop and remove containers
+docker compose down -v        # also delete saved database volumes
+npm install                   # install app dependencies
+npm run dev                   # run app.js with watch mode
+npm run web                   # run app.js
 ```
 
----
-
-## The .env file
-
-The `.env` file in the root of the project stores credentials (database usernames, passwords, etc.). Instead of hardcoding these values directly in your code, you read them via `process.env.VARIABLE_NAME`. The `dotenv` library loads the `.env` file automatically when your code runs.
-
-At the top of your `client.js`, add:
-```js
-import dotenv from 'dotenv'
-dotenv.config()
-```
-
-Then you can use any variable from `.env` like:
-```js
-process.env.POSTGRES_USER      // 'admin'
-process.env.POSTGRES_PASSWORD  // 'admin'
-```
-
-This means all credentials are defined in one place — if something changes, you update `.env` and nothing else.
-
----
-
-## Documentation
-
-See [docs.md](docs.md) for links to each database client library's documentation.
-
----
-
-## Troubleshooting
-
-- **Docker not starting** — make sure Docker Desktop is open and running before running `docker compose` commands.
-- **Containers keep restarting** — run `docker compose logs <service-name>` to see the error (e.g. `docker compose logs kafka`).
+`docker compose down -v` deletes local database data. Use it only when you intend to reset the project.
